@@ -46,7 +46,7 @@ def build_agent():
         model=model,
         tools=TOOLS,
         system_prompt=SYSTEM_PROMPT,
-        memory_saver=checkpointer
+        checkpointer=checkpointer
     )
 
 def main():
@@ -85,3 +85,6 @@ def main():
 
         # Update count for next turn
         prev_message_count = len(result["messages"])
+
+if __name__ == "__main__":
+    main()
