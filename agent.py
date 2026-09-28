@@ -33,3 +33,18 @@ def count_words(text: str) -> int:
 
 
 TOOLS = [get_current_time, count_words]
+
+# ----- Agent -----
+def build_agent():
+    model = ChatOllama(model=CHAT_MODEL, temperature=0)
+
+    # InMemorySaver keeps conversation history in memory, keyed by thread ID.
+    # When the process exits, the history is gone because of short-term memory.
+    checkpointer = InMemorySaver()
+
+    return create_agent(
+        model=model,
+        tools=TOOLS,
+        system_prompt=SYSTEM_PROMPT,
+        memory_saver=checkpointer
+    )
