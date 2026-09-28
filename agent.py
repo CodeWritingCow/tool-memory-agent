@@ -48,3 +48,40 @@ def build_agent():
         system_prompt=SYSTEM_PROMPT,
         memory_saver=checkpointer
     )
+
+def main():
+    agent = build_agent()
+
+    # thread_id tells checkpointer which conversation to load and save
+    config = {"configurable": {"thread_id": "thread"}}
+
+    print("Ready! Ask the agent something. It remembers the conversation.\n")
+
+    # Track how many messages existed before this turn, so we can slice out
+    # only the new ones (tool calls + final answer) from the returned state.
+    prev_message_count = 0
+
+    while True:
+        question = input("You: ").strip()
+        if not question or question.lower() in ["exit", "quit"]:
+            break
+
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": question}]},
+            config=config
+        )
+
+        # Only look at messages added during this turn, not the full history.
+        new_messages = result["messages"][prev_message_count:]
+
+        # Print any tool calls made in this turn.
+        for message in new_messages:
+            tool_calls = getattr(message, "tool_calls", None)
+            if tool_calls:
+                for call in tool_calls:
+                    print(f"[tool call] {call['name']}({call['args']})")
+
+        print(f"\nAnswer: {result['messages'][-1].content}\n")
+
+        # Update count for next turn
+        prev_message_count = len(result["messages"])
